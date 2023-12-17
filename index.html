@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Fsh link</title>
+    <!-- Boiler plate------ -->
+    <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
+    <meta name="description" content="Fsh link main page">
+    <!-- ------- -->
+    <link rel="stylesheet" href="https://fsh.plus/newStyle.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://fsh.plus/fsh.png"/>
+    <meta name="theme-color" content="#a89c9b">
+    <!-- ------------------ -->
+    <style>
+      body {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="https://fsh.plus">
+      <table class="title">
+        <tr>
+          <td><video src="https://fsh.plus/fsh.webm" playsinline autoplay muted loop width="100" alt="Spining low quality fish"></video></td>
+          <td><h1>Fsh</h1></td>
+        </tr>
+      </table>
+    </a>
+    <h2 style="margin-top:-20px">Link</h2>
+    <br>
+    <p>Make links shorter with fsh link</p>
+    <input placeholder="url" type="url" id="url"><button onclick="short()">Shorten</button>
+    <p id="res"></p>
+    <script>
+      function short() {
+        fetch('/create?url='+document.getElementById('url').value).then(async data => {
+          data = await data.json();
+          if (data.err) {
+            document.getElementById("res").innerHTML = `Error!<br>${data.msg}`
+          } else {
+            document.getElementById("res").innerHTML = `Created!<br><a href="${data.url}">${data.url}</a><br><br><button onclick="navigator.clipboard.writeText('${data.url}')">Copy to clipboard</button>`;
+          }
+        })
+      }
+    </script>
+  </body>
+</html>
