@@ -116,6 +116,14 @@
 
   app.get('/services/oembed', async function(req, res) {
     let co = req.query["url"].split("://")[1].split("/")[1]
+    if (co == "") {
+      res.json({
+        version: "1.0",
+        type: "link",
+        title: 'Fsh link'
+      })
+      return;
+    }
     if (url.has(co)) {
       if (time.has(co)) {
         if ((Math.floor(new Date().getTime() / 1000)) > time.get(co) + 1200) {
@@ -145,6 +153,10 @@
       res.status(404)
       res.send("Error")
     }
+  })
+
+  app.get("/robots.txt", async function(req, res) {
+    res.sendFile(path.join(__dirname, 'robots.txt'))
   })
   
   app.get('/:id', async function(req, res) {
