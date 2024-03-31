@@ -93,7 +93,7 @@ app.get('/create', async function(req, res) {
     })
     return;
   }
-  if (uri.split('.')[1].length < 2) {
+  if ((uri.includes('://') ? uri.split('://')[1] : uri).split('/')[0].split('.').slice(-1)[0].length < 2) {
     res.status(400)
     res.json({
       err: true,
