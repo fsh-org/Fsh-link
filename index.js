@@ -56,7 +56,7 @@ app.get('/', async function(req, res) {
     
 app.post('/create', async function(req, res) {
   uri = req.query['url'];
-  if (uri?.length < 5) {
+  if (uri.length < 5) {
     res.status(400)
     res.json({
       err: true,
@@ -64,7 +64,10 @@ app.post('/create', async function(req, res) {
     })
     return;
   }
-  if ((uri.includes('://') ? uri.split('://')[1] : uri).split('/')[0].split('.').slice(-1)[0].length < 2) {
+  if (!uri.includes('://')) {
+    uri = 'https://' + uri;
+  }
+  if (!uri.includes('.')) {
     res.status(400)
     res.json({
       err: true,
@@ -72,8 +75,13 @@ app.post('/create', async function(req, res) {
     })
     return;
   }
-  if (!uri.includes('://')) {
-    uri = 'https://' + uri;
+  if (uri.split('://')[1].split('/')[0].split('.').slice(-1)[0].length < 2) {
+    res.status(400)
+    res.json({
+      err: true,
+      msg: "Missing <i>.com</i> part of url"
+    })
+    return;
   }
   let code = makeid(6);
   while (links.has(code)) {
