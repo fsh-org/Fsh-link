@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Fsh link</title>
+    <!-- Boiler plate------ -->
+    <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
+    <link rel="stylesheet" href="https://fsh.plus/NewStyle.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#a89c9b">
+    <!-- ------------------ -->
+    <meta property="og:description" content="[DESC]">
+    <meta property="og:image" content="[IMG]"/>
+    <!--<meta property="og:title" content="[NAME]"/-->
+    <link rel="alternate" type="application/json+oembed" href="http://link.fsh.plus/services/oembed?url=https://link.fsh.plus/[ID]&format=json" title="oEmbed" />
+    <style>
+      a {
+        text-decoration: none;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/">
+      <img src="https://fsh.plus/fsh.png" width="30" alt="Fsh logo" style="display:inline-block">
+      <h1 style="display:inline-block">Fsh link</h1>
+    </a>
+    <br><br><br><br><br>
+    <div style="width:100%;text-align:center">
+      <img src="https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url={{links.get(req.params['id']).url}}" width="30" style="display:inline-block;margin-bottom:-9px;">
+      <h2 style="display:inline-block;margin:0;font-size:24px;">{{links.get(req.params['id']).url.split('://').slice(-1)[0].split('/')[0]}}</h2>
+      <br><br>
+      <a href="{{links.get(req.params['id']).url}}"><button>Go <svg xmlns="http://www.w3.org/2000/svg" height="12" width="12" viewBox="0 0 512 512"><path fill="#ffffff" d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h82.7L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3V192c0 17.7 14.3 32 32 32s32-14.3 32-32V32c0-17.7-14.3-32-32-32H320zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z"/></svg></button></a>
+      <br><br>
+      <p style="width:300px;margin-left:auto;margin-right:auto;">By clicking go you will be directed to {{links.get(req.params['id']).url}}, this page may not be associated to fsh.</p>
+    </div>
+  </body>
+</html>

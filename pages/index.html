@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Fsh link</title>
+    <!-- Boiler plate------ -->
+    <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
+    <meta name="description" content="Fsh link, shorten links online">
+    <!-- ------- -->
+    <link rel="stylesheet" href="https://fsh.plus/NewStyle.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://fsh.plus/fsh.png"/>
+    <meta name="theme-color" content="#a89c9b">
+    <!-- ------------------ -->
+    <style>
+      body {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="https://fsh.plus">
+      <table class="title">
+        <tr>
+          <td><video src="https://fsh.plus/fsh.webm" playsinline autoplay muted loop width="100" alt="Spining low quality fish"></video></td>
+          <td><h1>Fsh</h1></td>
+        </tr>
+      </table>
+    </a>
+    <h2 style="margin-top:-20px">Link</h2>
+    <br>
+    <p>Make links shorter with fsh link</p>
+    <p id="res"></p>
+    <input placeholder="url" type="url" id="url"><button onclick="short()">Shorten</button>
+    <div style="display:flex;margin:0 auto;width:fit-content;gap:20px;text-align:left;">
+      <fieldset style="width:fit-content">
+        <legend>Expiration</legend>
+        <div>
+          <input type="radio" id="never" name="time" value="0" checked="">
+          <label for="never">Never</label>
+        </div>
+        <div>
+          <input type="radio" id="10m" name="time" value="600">
+          <label for="10m">10 Minutes</label>
+        </div>
+        <div>
+          <input type="radio" id="1h" name="time" value="3600">
+          <label for="1h">1 Hour</label>
+        </div>
+        <div>
+          <input type="radio" id="1d" name="time" value="86400">
+          <label for="1d">1 Day</label>
+        </div>
+        <div>
+          <input type="radio" id="1w" name="time" value="604800">
+          <label for="1w">1 Week</label>
+        </div>
+      </fieldset>
+      <fieldset style="width:fit-content">
+        <legend>Max uses</legend>
+        <label for="uses">Uses: Infinite</label>
+        <br>
+        <input type="range" id="uses" name="uses" value="0" max="50" min="0" onchange="updateuses(this)">
+      </fieldset>
+    </div>
+    <script>
+      function short() {
+        fetch(`/create?url=${encodeURIComponent(document.getElementById('url').value)}&time=${Number(document.querySelector('input[name="time"]:checked').value)}&uses=${Number(document.getElementById('uses').value)}`, { method: 'POST' })
+          .then(async data => {
+            data = await data.json();
+            if (data.err) {
+              document.getElementById("res").innerHTML = `Error!<br>${data.msg}`
+            } else {
+              document.getElementById("res").innerHTML = `<a href="${data.url}" target="_blank">${data.url}</a><button onclick="navigator.clipboard.writeText('${data.url}')" style="margin-left:5px;border:none;background:transparent;"><svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 384 512"><path fill="#fff" d="M192 0c-41.8 0-77.4 26.7-90.5 64H64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H282.5C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM112 192H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16z"></path></svg></button>`;
+            }
+          })
+      }
+      function updateuses(that) {
+        document.querySelector('label[for="uses"]').innerHTML = `Uses: ${that.value == 0 ? 'Infinite': that.value}`;
+      }
+    </script>
+  </body>
+</html>
