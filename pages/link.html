@@ -4,7 +4,7 @@
     <title>Fsh link</title>
     <!-- Boiler plate------ -->
     <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
-    <link rel="stylesheet" href="https://fsh.plus/NewStyle.css">
+    <link rel="stylesheet" href="https://fsh.plus/media/style.css">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,18 +15,26 @@
     <!--<meta property="og:title" content="[NAME]"/-->
     <link rel="alternate" type="application/json+oembed" href="http://link.fsh.plus/services/oembed?url=https://link.fsh.plus/[ID]&format=json" title="oEmbed" />
     <style>
-      a {
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      a, a:hover {
         text-decoration: none;
         color: #fff;
       }
     </style>
   </head>
   <body>
-    <a href="/">
+    <a href="/" style="position:absolute;top:5px;left:5px;">
       <img src="https://fsh.plus/fsh.png" width="30" alt="Fsh logo" style="display:inline-block">
       <h1 style="display:inline-block">Fsh link</h1>
     </a>
-    <br><br><br><br><br>
     <div style="width:100%;text-align:center">
       <img src="https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url={{links.get(req.params['id']).url}}" width="30" style="display:inline-block;margin-bottom:-9px;">
       <h2 style="display:inline-block;margin:0;font-size:24px;">{{links.get(req.params['id']).url.split('://').slice(-1)[0].split('/')[0]}}</h2>
