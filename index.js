@@ -128,6 +128,7 @@ app.get('/:id', async function(req, res) {
       links.set(req.params['id']+'.uses', links.get(req.params['id']).uses-1)
     }
   } else {
+    res.status(404)
     res.sendFile(path.join(__dirname, 'pages/notfound.html'))
   }
 })
