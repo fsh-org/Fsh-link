@@ -4,7 +4,7 @@ const cors = require('cors');
 var path = require('path');
 const fs = require('fs');
 
-const PORT = 20208;
+const PORT = 3000;
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -107,25 +107,34 @@ app.get("/robots.txt", async function(req, res) {
 })
   
 app.get('/:id', async function(req, res) {
-  if (links.has(req.params['id'])) {
-    if (links.get(req.params['id']).time !== 0) {
-      if ((Date.now()/1000)>links.get(req.params['id']).time) {
-        links.remove(req.params['id']);
+  let id = req.params['id'];
+  let direct = false;
+  if (id.endsWith('+')) {
+    direct = true;
+    id = id.slice(0, -1);
+  }
+  if (req.get('User-Agent').includes('bot')) {
+    direct = true;
+  }
+  if (links.has(id)) {
+    if (links.get(id).time !== 0) {
+      if ((Date.now()/1000)>links.get(id).time) {
+        links.remove(id);
         res.sendFile(path.join(__dirname, 'pages/notfound.html'));
         return;
       }
     }
-    if (req.get('User-Agent').includes('bot')) {
-      res.redirect(links.get(req.params['id']).url);
+    if (direct) {
+      res.redirect(links.get(id).url);
       return;
     }
     res.send(fs.readFileSync('pages/link.html', 'utf8'))
-    if (links.get(req.params['id']).uses !== 0) {
-      if (links.get(req.params['id']).uses === 1) {
-        links.remove(req.params['id']);
+    if (links.get(id).uses !== 0) {
+      if (links.get(id).uses === 1) {
+        links.remove(id);
         return;
       }
-      links.set(req.params['id']+'.uses', links.get(req.params['id']).uses-1)
+      links.set(id+'.uses', links.get(id).uses-1)
     }
   } else {
     res.status(404)
