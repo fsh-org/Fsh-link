@@ -97,8 +97,15 @@ app.post('/create', async function(req, res) {
   })
 })
 app.get("/get/:id", async function(req, res) {
+  let url = links.get(req.params['id']);
+  if (!url || url.blocked) {
+    res.json({
+      link: ''
+    })
+    return;
+  }
   res.json({
-    link: links.get(req.params['id']).url
+    link: url.url
   })
 })
 
@@ -127,6 +134,10 @@ app.get('/:id', async function(req, res) {
         res.sendFile(path.join(__dirname, 'pages/notfound.html'));
         return;
       }
+    }
+    if (links.get(id).blocked) {
+      res.redirect('/blocked');
+      return;
     }
     if (direct) {
       res.redirect(links.get(id).url);
