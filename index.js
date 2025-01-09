@@ -105,6 +105,10 @@ app.get("/get/:id", async function(req, res) {
 app.get("/robots.txt", async function(req, res) {
   res.sendFile(path.join(__dirname, 'pages/robots.txt'));
 })
+
+app.get("/blocked", async function(req, res) {
+  res.sendFile(path.join(__dirname, 'pages/blocked.html'));
+})
   
 app.get('/:id', async function(req, res) {
   let id = req.params['id'];
