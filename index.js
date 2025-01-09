@@ -32,8 +32,8 @@ app.use(function(req, res, next) {
   next();
 })
 
-const { DB } = require("fshdb")
-const links = new DB('databases/links.json')
+const DB = require("fshdb");
+const links = new DB('databases/links.json');
 
 process.on('uncaughtException', function(err) {
   console.log('Error!');
@@ -51,12 +51,12 @@ function makeid(length) {
 }
 
 app.get('/', async function(req, res) {
-  res.sendFile(path.join(__dirname, 'pages/index.html'))
+  res.sendFile(path.join(__dirname, 'pages/index.html'));
 })
     
 app.post('/create', async function(req, res) {
   uri = req.query['url'];
-  if (uri.length < 5) {
+  if (uri.length < 4) {
     res.status(400)
     res.json({
       err: true,
@@ -71,7 +71,7 @@ app.post('/create', async function(req, res) {
     res.status(400)
     res.json({
       err: true,
-      msg: "Missing <i>.com</i> part of url"
+      msg: "Missing TLD of url"
     })
     return;
   }
@@ -79,7 +79,7 @@ app.post('/create', async function(req, res) {
     res.status(400)
     res.json({
       err: true,
-      msg: "Missing <i>.com</i> part of url"
+      msg: "Missing TLD part of url"
     })
     return;
   }
@@ -103,7 +103,7 @@ app.get("/get/:id", async function(req, res) {
 })
 
 app.get("/robots.txt", async function(req, res) {
-  res.sendFile(path.join(__dirname, 'pages/robots.txt'))
+  res.sendFile(path.join(__dirname, 'pages/robots.txt'));
 })
   
 app.get('/:id', async function(req, res) {
@@ -113,7 +113,7 @@ app.get('/:id', async function(req, res) {
     direct = true;
     id = id.slice(0, -1);
   }
-  if (req.get('User-Agent').includes('bot')) {
+  if (req.get('User-Agent')?.includes('bot')) {
     direct = true;
   }
   if (links.has(id)) {
@@ -134,17 +134,17 @@ app.get('/:id', async function(req, res) {
         links.remove(id);
         return;
       }
-      links.set(id+'.uses', links.get(id).uses-1)
+      links.set(id+'.uses', links.get(id).uses-1);
     }
   } else {
-    res.status(404)
-    res.sendFile(path.join(__dirname, 'pages/notfound.html'))
+    res.status(404);
+    res.sendFile(path.join(__dirname, 'pages/notfound.html'));
   }
 })
   
 app.use(function(req, res) {
-  res.status(404)
-  res.sendFile(path.join(__dirname, 'pages/404.html'))
+  res.status(404);
+  res.sendFile(path.join(__dirname, 'pages/404.html'));
 })
 
 app.listen(PORT, function(){console.log('listening at '+PORT)});
