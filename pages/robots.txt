@@ -1,6 +1,6 @@
 user-agent: *
-disallow: /*
-allow: /
+Disallow: /
+Allow: /$
 disallow: /get
 disallow: /create
-dissallow: /blocked
+disallow: /blocked
