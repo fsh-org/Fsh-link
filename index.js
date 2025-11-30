@@ -1,10 +1,16 @@
-const express = require('express')
+const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-var path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
-const PORT = 3000;
+let nanoid;
+(async()=>{
+  const nanid = await import('nanoid');
+  nanoid = nanid.nanoid;
+})();
+
+const PORT = 3003;
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -20,19 +26,19 @@ app.use(function(req, res, next) {
         re = eval(match.replace('{{','').replace('}}','').trim());
       } catch (err) {
         re = 'Error';
-        console.log('Err: '+err)
+        console.log('Err: '+err);
       }
       return re;
     })
   }
   res.send = function(){
     arguments[0] = mod(arguments[0]);
-    orig.apply(res, arguments)
+    orig.apply(res, arguments);
   };
   next();
 })
 
-const DB = require("fshdb");
+const DB = require('fshdb');
 const links = new DB('databases/links.json');
 
 process.on('uncaughtException', function(err) {
@@ -40,83 +46,67 @@ process.on('uncaughtException', function(err) {
   console.log(err);
 });
 
-function makeid(length) {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < Number(length); i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
 app.get('/', async function(req, res) {
   res.sendFile(path.join(__dirname, 'pages/index.html'));
-})
-    
+});
+
 app.post('/create', async function(req, res) {
   uri = req.query['url'];
   if (uri.length < 4) {
-    res.status(400)
+    res.status(400);
     res.json({
       err: true,
-      msg: "Too short to be a url"
-    })
+      msg: 'Too short to be a url'
+    });
     return;
   }
-  if (!uri.includes('://')) {
-    uri = 'https://' + uri;
-  }
+  if (!uri.includes('://')) uri = 'https://'+uri;
   if (!uri.includes('.')) {
-    res.status(400)
+    res.status(400);
     res.json({
       err: true,
-      msg: "Missing TLD of url"
-    })
+      msg: 'Missing TLD of url'
+    });
     return;
   }
   if (uri.split('://')[1].split('/')[0].split('.').slice(-1)[0].length < 2) {
-    res.status(400)
+    res.status(400);
     res.json({
       err: true,
-      msg: "Missing TLD part of url"
-    })
+      msg: 'Missing TLD part of url'
+    });
     return;
   }
-  let code = makeid(6);
+  let code = nanoid(10);
   while (links.has(code)) {
-    code = makeid(6);
+    code = nanoid(10);
   }
   links.set(code, {
     url: uri,
     time: ((Number(req.query['time']) || 0)===0?0:(Math.floor(Date.now()/1000)+(Number(req.query['time']) || 0))),
-    uses: Number(req.query['uses']) || 0,
+    uses: Number(req.query['uses']) || 0
   });
-  res.json({
-    url: `https://link.fsh.plus/${code}`
-  })
-})
-app.get("/get/:id", async function(req, res) {
+  res.json({ url: 'https://link.fsh.plus/'+code });
+});
+app.get('/get/:id', async function(req, res) {
   let url = links.get(req.params['id']);
   if (!url || url.blocked) {
-    res.json({
-      link: ''
-    })
+    res.json({ link: '' });
     return;
   }
-  res.json({
-    link: url.url
-  })
-})
+  res.json({ link: url.url });
+});
 
-app.get("/robots.txt", async function(req, res) {
+app.get('/robots.txt', async function(req, res) {
   res.sendFile(path.join(__dirname, 'pages/robots.txt'));
-})
-
-app.get("/blocked", async function(req, res) {
+});
+app.get('/favicon.ico', async function(req, res) {
+  res.sendFile(path.join(__dirname, 'pages/favicon.ico'));
+});
+app.get('/blocked', async function(req, res) {
   res.sendFile(path.join(__dirname, 'pages/blocked.html'));
-})
-  
+});
+
 app.get('/:id', async function(req, res) {
   let id = req.params['id'];
   let direct = false;
@@ -155,11 +145,13 @@ app.get('/:id', async function(req, res) {
     res.status(404);
     res.sendFile(path.join(__dirname, 'pages/notfound.html'));
   }
-})
-  
+});
+
 app.use(function(req, res) {
   res.status(404);
   res.sendFile(path.join(__dirname, 'pages/404.html'));
-})
+});
 
-app.listen(PORT, function(){console.log('listening at '+PORT)});
+app.listen(PORT, ()=>{
+  console.log('listening at '+PORT);
+});

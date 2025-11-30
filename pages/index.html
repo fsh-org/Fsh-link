@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Fsh link</title>
-    <!-- Boiler plate------ -->
-    <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
-    <meta name="description" content="Fsh link, shorten links online">
+    <title>Fsh Link</title>
+    <meta property="og:title" content="Fsh Link">
+    <meta name="twitter:title" content="Fsh Link">
+    <meta name="description" content="Fsh Link, free online link shortener.">
+    <meta property="og:description" content="Fsh Link, free online link shortener.">
+    <meta name="twitter:description" content="Fsh Link, free online link shortener.">
+    <link rel="canonical" href="https://link.fsh.plus">
+    <meta property="og:url" content="https://link.fsh.plus">
+    <!-- ------- -->
+    <meta charset="UTF-8">
+    <meta name="robots" content="index, follow">
+    <meta property="og:locale" content="en">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://link.fsh.plus/favicon.ico" type="image/vnd.microsoft.icon">
+    <meta property="og:image" content="https://link.fsh.plus/favicon.ico">
+    <meta property="og:image:alt" content="Fsh Link logo">
+    <meta name="twitter:image" content="https://link.fsh.plus/favicon.ico">
+    <meta name="theme-color" content="#a89c9b">
     <!-- ------- -->
     <link rel="stylesheet" href="https://fsh.plus/media/style.css">
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="https://fsh.plus/fsh.png"/>
-    <meta name="theme-color" content="#a89c9b">
-    <!-- ------------------ -->
     <script src="https://account.fsh.plus/script.js"></script>
+    <!-- ------------------ -->
     <style>
       body {
         text-align: center;
+      }
+      fieldset {
+        border-radius: 0.5rem;
       }
     </style>
   </head>
@@ -34,7 +48,7 @@
     <p>Make links shorter with fsh link</p>
     <p id="res"></p>
     <input placeholder="url" type="url" id="url"><button onclick="short()">Shorten</button>
-    <div style="display:flex;margin:0 auto;width:fit-content;gap:20px;text-align:left;">
+    <div style="display:flex;align-items:start;margin:0 auto;width:fit-content;gap:20px;text-align:left;">
       <fieldset style="width:fit-content">
         <legend>Expiration</legend>
         <div>
@@ -57,12 +71,16 @@
           <input type="radio" id="1w" name="time" value="604800">
           <label for="1w">1 Week</label>
         </div>
+        <div>
+          <input type="radio" id="1m" name="time" value="2592000">
+          <label for="1m">1 Month</label>
+        </div>
       </fieldset>
       <fieldset style="width:fit-content">
         <legend>Max uses</legend>
         <label for="uses">Uses: Infinite</label>
         <br>
-        <input type="range" id="uses" name="uses" value="0" max="50" min="0" onchange="updateuses(this)">
+        <input type="range" id="uses" name="uses" value="0" max="100" min="0" onchange="updateuses(this)" oninput="updateuses(this)">
       </fieldset>
     </div>
     <script>
@@ -70,12 +88,10 @@
         fetch(`/create?url=${encodeURIComponent(document.getElementById('url').value)}&time=${Number(document.querySelector('input[name="time"]:checked').value)}&uses=${Number(document.getElementById('uses').value)}`, { method: 'POST' })
           .then(async data => {
             data = await data.json();
-            if (data.err) {
-              document.getElementById("res").innerHTML = `Error!<br>${data.msg}`
-            } else {
-              document.getElementById("res").innerHTML = `<a href="${data.url}" target="_blank">${data.url}</a><button onclick="navigator.clipboard.writeText('${data.url}')" style="margin-left:5px;border:none;background:transparent;"><svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 384 512"><path fill="#fff" d="M192 0c-41.8 0-77.4 26.7-90.5 64H64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H282.5C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM112 192H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16z"></path></svg></button>`;
-            }
-          })
+            document.getElementById('res').innerHTML = data.err?
+            `Error!<br>${data.msg}`:
+            `<a href="${data.url}" target="_blank">${data.url}</a><button onclick="navigator.clipboard.writeText('${data.url}')" style="border:none"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256"><rect x="88.5" y="88.5" width="155" height="155" rx="17.5" stroke-width="25" fill="none"/><rect width="180" height="180" rx="30"/></svg></button>`;
+          });
       }
       function updateuses(that) {
         document.querySelector('label[for="uses"]').innerHTML = `Uses: ${that.value == 0 ? 'Infinite': that.value}`;
