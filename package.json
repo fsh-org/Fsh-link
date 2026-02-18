@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "body-parser": "^2.2.1",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "fshdb": "^0.4.0",
     "nanoid": "^5.1.6"
   }
