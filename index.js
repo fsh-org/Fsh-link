@@ -68,14 +68,20 @@ app.post('/create', async(req, res)=>{
     });
     return;
   }
-  let code = nanoid(10);
-  while (links.has(code)) {
-    code = nanoid(10);
-  }
+  url = url.href;
   let time = Math.max(Number(req.query['time']) || 0, 0);
   time = time===0?0:Math.floor(Date.now()/1000)+time;
   let uses = Math.max(Number(req.query['uses']) || 0, 0);
-  links.set(code, { url: url.href, time, uses });
+  let sub = [];
+  let code;
+  if (time===0 && uses===0) sub = links.find((val)=>val.time===0&&val.uses===0&&val.url===url);
+  if (sub[0]) {
+    code = sub[0];
+  } else {
+    code = nanoid(10);
+    while (links.has(code)) code = nanoid(10);
+  }
+  links.set(code, { url, time, uses });
   res.json({ url: 'https://link.fsh.plus/'+code });
 });
 app.get('/get/:id', async(req, res)=>{
