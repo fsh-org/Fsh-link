@@ -15,6 +15,7 @@ app.use(cors());
 
 const DB = require('fshdb');
 const links = new DB('databases/links.json');
+const BadDomains = require('./databases/baddomains.js');
 
 function clean(text) {
   return text.replaceAll('<', '%3C').replaceAll('>', '%3E');
@@ -68,13 +69,21 @@ app.post('/create', async(req, res)=>{
     });
     return;
   }
+  if (BadDomains.includes(url.hostname)) {
+    res.status(400);
+    res.json({
+      err: true,
+      msg: 'Invalid url'
+    });
+    return;
+  }
   url = url.href;
   let time = Math.max(Number(req.query['time']) || 0, 0);
   time = time===0?0:Math.floor(Date.now()/1000)+time;
   let uses = Math.max(Number(req.query['uses']) || 0, 0);
   let sub = [];
   let code;
-  if (time===0 && uses===0) sub = links.find((val)=>val.time===0&&val.uses===0&&val.url===url);
+  if (uses===0) sub = links.find((val)=>val.uses===0&&val.time===time&&val.url===url);
   if (sub[0]) {
     code = sub[0];
   } else {
