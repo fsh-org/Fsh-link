@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('node:path');
 const fs = require('node:fs');
@@ -13,46 +12,36 @@ let nanoid;
 const PORT = 3003;
 const app = express();
 app.use(cors());
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
-app.use(bodyParser.json());
-app.use(function(req, res, next) {
-  let orig = res.send;
-  function mod(text) {
-    return text.replace(/\{\{[^¬]+?\}\}/g, function(match){
-      let re;
-      try {
-        re = eval(match.replace('{{','').replace('}}','').trim());
-      } catch (err) {
-        re = 'Error';
-        console.log('Err: '+err);
-      }
-      return re;
-    })
-  }
-  res.send = function(){
-    arguments[0] = mod(arguments[0]);
-    orig.apply(res, arguments);
-  };
-  next();
-})
 
 const DB = require('fshdb');
 const links = new DB('databases/links.json');
 
-process.on('uncaughtException', function(err) {
+function clean(text) {
+  return text.replaceAll('<', '%3C').replaceAll('>', '%3E');
+}
+
+process.on('uncaughtException', (err)=>{
   console.log('Error!');
   console.log(err);
 });
 
-app.get('/', async function(req, res) {
+app.get('/', async(req, res)=>{
   res.sendFile(path.join(__dirname, 'pages/index.html'));
 });
+app.get('/blocked', async(req, res)=>{
+  res.sendFile(path.join(__dirname, 'pages/blocked.html'));
+});
+app.get('/robots.txt', async(req, res)=>{
+  res.sendFile(path.join(__dirname, 'pages/robots.txt'));
+});
+app.get('/favicon.ico', async(req, res)=>{
+  res.sendFile(path.join(__dirname, 'pages/favicon.ico'));
+});
 
-app.post('/create', async function(req, res) {
-  uri = req.query['url'];
-  if (uri.length < 4) {
+// API
+app.post('/create', async(req, res)=>{
+  let url = req.query['url'];
+  if (!url || url.length < 2) {
     res.status(400);
     res.json({
       err: true,
@@ -60,20 +49,22 @@ app.post('/create', async function(req, res) {
     });
     return;
   }
-  if (!uri.includes('://')) uri = 'https://'+uri;
-  if (!uri.includes('.')) {
+  if (!url.includes('://')) url = 'https://'+url;
+  try {
+    url = new URL(url);
+  } catch(err) {
     res.status(400);
     res.json({
       err: true,
-      msg: 'Missing TLD of url'
+      msg: 'Invalid url'
     });
     return;
   }
-  if (uri.split('://')[1].split('/')[0].split('.').slice(-1)[0].length < 2) {
+  if (!['http:','https:'].includes(url.protocol)) {
     res.status(400);
     res.json({
       err: true,
-      msg: 'Missing TLD part of url'
+      msg: 'Only http and https protocols supported'
     });
     return;
   }
@@ -81,73 +72,70 @@ app.post('/create', async function(req, res) {
   while (links.has(code)) {
     code = nanoid(10);
   }
-  links.set(code, {
-    url: uri,
-    time: ((Number(req.query['time']) || 0)===0?0:(Math.floor(Date.now()/1000)+(Number(req.query['time']) || 0))),
-    uses: Number(req.query['uses']) || 0
-  });
+  let time = Math.max(Number(req.query['time']) || 0, 0);
+  time = time===0?0:Math.floor(Date.now()/1000)+time;
+  let uses = Math.max(Number(req.query['uses']) || 0, 0);
+  links.set(code, { url: url.href, time, uses });
   res.json({ url: 'https://link.fsh.plus/'+code });
 });
-app.get('/get/:id', async function(req, res) {
-  let url = links.get(req.params['id']);
+app.get('/get/:id', async(req, res)=>{
+  let id = req.params['id'];
+  let url = links.get(id);
   if (!url || url.blocked) {
+    res.json({ link: '' });
+    return;
+  }
+  if (url.time !== 0 && (Date.now()/1000)>url.time) {
+    links.remove(id);
     res.json({ link: '' });
     return;
   }
   res.json({ link: url.url });
 });
 
-app.get('/robots.txt', async function(req, res) {
-  res.sendFile(path.join(__dirname, 'pages/robots.txt'));
-});
-app.get('/favicon.ico', async function(req, res) {
-  res.sendFile(path.join(__dirname, 'pages/favicon.ico'));
-});
-app.get('/blocked', async function(req, res) {
-  res.sendFile(path.join(__dirname, 'pages/blocked.html'));
-});
-
-app.get('/:id', async function(req, res) {
+// Links
+let linkPage;
+app.get('/:id', async(req, res)=>{
   let id = req.params['id'];
   let direct = false;
   if (id.endsWith('+')) {
     direct = true;
     id = id.slice(0, -1);
   }
-  if (req.get('User-Agent')?.includes('bot')) {
-    direct = true;
-  }
-  if (links.has(id)) {
-    if (links.get(id).time !== 0) {
-      if ((Date.now()/1000)>links.get(id).time) {
-        links.remove(id);
-        res.sendFile(path.join(__dirname, 'pages/notfound.html'));
-        return;
-      }
-    }
-    if (links.get(id).blocked) {
-      res.redirect('/blocked');
-      return;
-    }
-    if (direct) {
-      res.redirect(links.get(id).url);
-      return;
-    }
-    res.send(fs.readFileSync('pages/link.html', 'utf8'))
-    if (links.get(id).uses !== 0) {
-      if (links.get(id).uses === 1) {
-        links.remove(id);
-        return;
-      }
-      links.set(id+'.uses', links.get(id).uses-1);
-    }
-  } else {
+  if (req.get('User-Agent')?.includes('bot')) direct = true;
+  if (!links.has(id)) {
     res.status(404);
     res.sendFile(path.join(__dirname, 'pages/notfound.html'));
+    return;
+  }
+  let link = links.get(id);
+  if (link.blocked) {
+    res.redirect('/blocked');
+    return;
+  }
+  if (link.time !== 0 && (Date.now()/1000)>link.time) {
+    links.remove(id);
+    res.sendFile(path.join(__dirname, 'pages/notfound.html'));
+    return;
+  }
+  if (direct) {
+    res.redirect(link.url);
+    return;
+  }
+  if (!linkPage) linkPage = fs.readFileSync('pages/link.html', 'utf8');
+  res.send(linkPage
+    .replaceAll('{{url}}', clean(link.url))
+    .replace('{{domain}}', clean(new URL(link.url).hostname)));
+  if (link.uses !== 0) {
+    if (link.uses < 2) {
+      links.remove(id);
+      return;
+    }
+    links.set(id+'.uses', link.uses-1);
   }
 });
 
-app.use(function(req, res) {
+app.use((req, res)=>{
   res.status(404);
   res.sendFile(path.join(__dirname, 'pages/404.html'));
 });
